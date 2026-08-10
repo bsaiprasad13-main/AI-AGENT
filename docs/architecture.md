@@ -415,8 +415,8 @@ mcp-server/
 | :--- | :--- | :--- | :--- |
 | `docs_get_metadata` | `doc_id: str` | `DocMetadata` | Inspects existing headings and sections to verify idempotency before writing. |
 | `docs_append_section` | `doc_id: str, heading: str, anchor_id: str, blocks: List[DocBlock]` | `AppendResult` | Appends a structured, formatted weekly section at the end of the Google Doc. |
-| `gmail_create_draft` | `recipient: str, subject: str, body_html: str, body_text: str` | `DraftResult` | Creates a draft teaser email in Gmail (default in dev/staging). |
-| `gmail_send_message` | `recipient: str, subject: str, body_html: str, body_text: str, idempotency_key: str` | `SendResult` | Sends the teaser email to the stakeholder distribution list with deep link. |
+| `create_email_draft` | `recipient: str, subject: str, body_html: str, body_text: str` | `DraftResult` | Creates a draft teaser email in Gmail (default in dev/staging). |
+| `send_email` | `recipient: str, subject: str, body_html: str, body_text: str, idempotency_key: str` | `SendResult` | Sends the teaser email to the stakeholder distribution list with deep link. |
 
 ---
 

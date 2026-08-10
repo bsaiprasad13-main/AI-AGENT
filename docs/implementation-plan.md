@@ -123,8 +123,10 @@ gantt
      - **Description**: Appends text content directly to an existing Google Document.
   2. `create_email_draft`:
      - **Endpoint**: `POST /create_email_draft`
-     - **Required Parameters**: `to` (string / list), `subject` (string), `body` (string)
      - **Description**: Creates a draft email in Gmail with recipient, subject, and teaser snapshot.
+  3. `send_email`:
+     - **Endpoint**: `POST /send_email`
+     - **Description**: Immediately sends teaser emails in Gmail without creating a draft.
 
 #### Deliverables & Milestones:
 - Verified endpoint connectivity and schema compatibility with `https://web-production-c16ea.up.railway.app`.
@@ -147,7 +149,7 @@ gantt
   - Injects a prominent call-to-action link button pointing to the Google Doc heading anchor.
 - [x] Implement `src/agent/mcp_client.py`:
   - Production-grade HTTP & MCP client connecting to `https://web-production-c16ea.up.railway.app`.
-  - Implements `get_server_status()`, `append_to_doc(doc_id, content)`, and `create_email_draft(to, subject, body)`.
+  - Implements `get_server_status()`, `append_to_doc(doc_id, content)`, `create_email_draft(to, subject, body)`, and `send_email(to, subject, body)`.
   - Built-in bearer/API key auth headers, exponential backoff retries, and typed exception hierarchy.
 - [x] Implement `src/agent/orchestrator.py`:
   - Connects the end-to-end pipeline: Ingestion $\rightarrow$ Preprocessing $\rightarrow$ Reasoning $\rightarrow$ Rendering $\rightarrow$ Hybrid Publishing (Direct OAuth `token.json` & Cloud MCP).

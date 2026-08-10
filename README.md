@@ -12,7 +12,7 @@ Instead of manual spreadsheet analysis or ad-hoc API integrations, this agent le
   - Uses sentence embeddings (`sentence-transformers/all-MiniLM-L6-v2`) mapped into a 5D UMAP manifold.
   - Clusters semantic density using HDBSCAN to find the most impactful themes while isolating noise.
 - **LLM Synthesis & Quote Grounding**: Generates actionable insights using Gemini/Groq LLMs while rigorously ensuring extracted verbatim quotes exist in the raw source data (anti-hallucination).
-- **Google Workspace MCP Integration**: Uses an independent MCP server (`https://web-production-c16ea.up.railway.app`) to format and append sections to a living Google Doc and draft teaser emails in Gmail.
+- **Google Workspace MCP Integration**: Uses an independent MCP server (`https://web-production-c16ea.up.railway.app`) to format and append sections to a living Google Doc and draft or send teaser emails in Gmail.
 - **Idempotency & Safety**: Safe to re-run; it will not duplicate Google Doc sections or spam emails for the same ISO week.
 
 ## Architecture
@@ -52,7 +52,7 @@ cp .env.example .env
 Key variables include:
 - `GEMINI_API_KEY`: Your Gemini API key for LLM synthesis.
 - `MCP_SERVER_URL`: Your hosted MCP server URL.
-- `ENVIRONMENT`: Set to `development` to strictly draft emails, or `production` to send them.
+- `ENVIRONMENT`: Set to `development` to strictly draft emails. Use the `--send-email` flag in the CLI to actually send emails.
 
 ### 4. Running the Application
 

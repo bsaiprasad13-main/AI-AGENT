@@ -6,7 +6,7 @@ The **Weekly Product Review Pulse** is an automated intelligence agent designed 
 
 For the current implementation (**Phase 1**), the system is exclusively focused on **Groww** and ingests feedback strictly from the **Google Play Store**. 
 
-Instead of manual spreadsheet analysis or ad-hoc API integrations, the agent interfaces with a **dedicated Google Workspace MCP (Model Context Protocol) Server (`https://web-production-c16ea.up.railway.app`)**. The agent processes reviews, extracts structured insights, and publishes outputs directly to **Google Docs** and **Gmail** through standard MCP tools (`append_to_doc`, `create_email_draft`).
+Instead of manual spreadsheet analysis or ad-hoc API integrations, the agent interfaces with a **dedicated Google Workspace MCP (Model Context Protocol) Server (`https://web-production-c16ea.up.railway.app`)**. The agent processes reviews, extracts structured insights, and publishes outputs directly to **Google Docs** and **Gmail** through standard MCP tools (`append_to_doc`, `create_email_draft`, `send_email`).
 
 ### Scope & Target Product
 - **Target Platform (Current Focus)**: **Groww** (Google Play Store — `com.nextbillion.groww`)
@@ -67,7 +67,7 @@ flowchart TD
 | **Data Retrieval** | Google Play Ingestion Module | Scrapes public reviews for Groww (`com.nextbillion.groww`) across a configurable rolling window (8–12 weeks). |
 | **Reasoning & Analysis** | Clustering & LLM Pipeline | Performs PII scrubbing, LLM-based filtering and clustering (Groq), theme naming, verbatim quote extraction, and action idea generation (Gemini 2.5 Flash). |
 | **Output Generation** | Report & Email Renderers | Formats structured text content for Google Docs append and crisp teaser text/HTML for stakeholder emails. |
-| **Google Workspace MCP Server** | Cloud MCP Server (`https://web-production-c16ea.up.railway.app`) | Standalone MCP server exposing `append_to_doc` and `create_email_draft` endpoints. Handles Google OAuth token flows isolated from the core agent. |
+| **Google Workspace MCP Server** | Cloud MCP Server (`https://web-production-c16ea.up.railway.app`) | Standalone MCP server exposing `append_to_doc`, `create_email_draft`, and `send_email` endpoints. Handles Google OAuth token flows isolated from the core agent. |
 | **Agent / MCP Client** | MCP Host Agent (`src/agent/mcp_client.py`) | Orchestrates the entire pipeline, calling the MCP server tools for publishing without embedding direct Google REST API dependencies. |
 
 ---
@@ -79,6 +79,7 @@ flowchart TD
 - Exposes tools for:
   - `append_to_doc`: Appending dated, structured text sections to a specified Google Doc.
   - `create_email_draft`: Creating draft teaser emails in Gmail with recipient, subject, and body.
+  - `send_email`: Immediately sends teaser emails in Gmail without creating a draft.
 - The agent runs as an MCP client and interacts with the server over standard HTTP/REST & MCP protocols with retry and authentication management.
 
 ### 2. Groww Google Play Store Specialization
