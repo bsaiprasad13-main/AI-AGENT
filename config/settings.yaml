@@ -1,0 +1,77 @@
+# Weekly Product Review Pulse - Global Pipeline Settings
+
+ingestion:
+  default_rolling_window_weeks: 10
+  min_rolling_window_weeks: 8
+  max_rolling_window_weeks: 12
+  language: en
+  country: in
+  max_reviews_per_fetch: 5000
+  rate_limit_retries: 3
+  rate_limit_backoff_seconds: 2.0
+
+preprocessing:
+  min_word_count: 8
+  filter_all_emojis: true
+  filter_non_english: true
+  filter_emojis_only: true
+  mask_usernames: true
+  enable_prompt_injection_shield: true
+  redact_phone: true
+  redact_email: true
+  redact_upi: true
+  redact_bank_demat: true
+  redact_pan_aadhaar: true
+
+reasoning:
+  groq:
+    max_context_tokens: 8192
+    input_token_buffer: 6000
+    temperature: 0.1
+    max_tokens: 4000
+  fallback_hierarchy:
+    enabled: true
+    min_cluster_size_fallback: 5
+  impact_scoring:
+    count_weight: 1.0
+    rating_invert_scale: 5.0
+    thumbs_up_log_base: 10
+  synthesis:
+    max_themes: 5
+    min_themes: 3
+    reviews_per_cluster_sample: 8
+    max_tokens_per_review: 150
+  quote_grounding:
+    similarity_threshold: 0.95
+    use_fuzzy_fallback: true
+    quotes_per_theme: 2
+
+rendering:
+  doc_heading_prefix: "Week"
+  anchor_id_template: "h.{product_id}_{iso_week}"
+  enable_dark_mode_email_css: true
+
+storage:
+  cache_dir: "data/cache"
+  audit_db_path: "data/audit.db"
+
+mcp:
+  server_url: "https://web-production-c16ea.up.railway.app"
+  api_key: ""
+  timeout_seconds: 30.0
+  max_retries: 3
+  retry_backoff_seconds: 2.0
+  tools:
+    append_to_doc:
+      endpoint: "/append_to_doc"
+      method: "POST"
+      required_parameters:
+        - "doc_id"
+        - "content"
+    create_email_draft:
+      endpoint: "/create_email_draft"
+      method: "POST"
+      required_parameters:
+        - "to"
+        - "subject"
+        - "body"

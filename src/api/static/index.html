@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Review Pulse Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-panel">
+            <div class="header-content">
+                <h1>Review Pulse <span>Agent</span></h1>
+                <div class="scheduler-info">
+                    <span id="backend-status" class="status-badge offline">Checking...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <!-- Step 1: Run Analysis -->
+            <section class="glass-panel control-section">
+                <div class="section-header">
+                    <h2>1. Trigger Analysis</h2>
+                    <p class="subtitle">Ingest latest Play Store reviews, cluster themes, and generate insights.</p>
+                </div>
+                
+                <div class="controls-row">
+                    <button id="btn-run" class="btn primary-btn">
+                        <span class="btn-text">Run Analysis</span>
+                        <div class="spinner hidden"></div>
+                    </button>
+                    
+                    <div id="run-status-container" class="run-status hidden">
+                        <span id="run-step" class="step-text">Starting...</span>
+                    </div>
+                </div>
+                <div id="run-error" class="error-banner hidden"></div>
+            </section>
+
+            <!-- Loading Skeleton for Insights -->
+            <div id="insights-skeleton" class="skeleton-container hidden">
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state">
+                <p>No analysis yet — click "Run Analysis" to get started.</p>
+            </div>
+
+            <!-- Insights & Preview Container -->
+            <div id="dashboard-content" class="dashboard-content hidden">
+                <!-- Step 2: Insights Visualization -->
+                <section class="glass-panel insights-section">
+                    <div class="section-header">
+                        <h2>2. Insights Dashboard</h2>
+                        <span class="date-badge" id="report-date"></span>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-label">Extracted Reviews</span>
+                            <span class="stat-value" id="stat-extracted">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Filtered Reviews</span>
+                            <span class="stat-value" id="stat-total">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Avg Rating</span>
+                            <span class="stat-value" id="stat-rating">0.0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Negative Sentiment</span>
+                            <span class="stat-value" id="stat-negative">0%</span>
+                        </div>
+                    </div>
+
+                    <h3>Top Clusters</h3>
+                    <div id="cluster-list" class="cluster-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </section>
+
+                <div class="preview-grid">
+                    <!-- Step 3: Document Preview -->
+                    <section class="glass-panel preview-section">
+                        <div class="section-header">
+                            <h2>3. Document Preview</h2>
+                            <span class="badge read-only">Read Only</span>
+                        </div>
+                        <div id="doc-preview" class="doc-content">
+                            <!-- Populated by JS -->
+                        </div>
+                    </section>
+
+                    <!-- Step 4: Email Draft Preview -->
+                    <section class="glass-panel preview-section">
+                        <div class="section-header">
+                            <h2>4. Email Draft</h2>
+                            <span class="badge editable">Editable</span>
+                        </div>
+                        <div class="email-editor">
+                            <div class="input-group">
+                                <label>Subject</label>
+                                <input type="text" id="email-subject" class="glass-input">
+                            </div>
+                            <div class="input-group">
+                                <label>Body (HTML/Text)</label>
+                                <textarea id="email-body" class="glass-textarea" rows="18"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Step 5 & 6: Approval and Send -->
+                <section class="glass-panel publish-section">
+                    <div class="section-header">
+                        <h2>5. Review & Publish</h2>
+                    </div>
+                    
+                    <div class="recipients-group">
+                        <label>Recipients <span class="hint-text">(press Enter or click + to add)</span></label>
+                        <div class="chip-input-wrapper">
+                            <div class="chip-input-container" id="chip-container">
+                                <!-- Chips go here -->
+                                <input type="text" id="recipient-input" placeholder="e.g. user@example.com" class="chip-input">
+                            </div>
+                            <button type="button" id="btn-add-recipient" class="btn add-chip-btn" title="Add recipient">+</button>
+                        </div>
+                        <span class="validation-error" id="email-error">Invalid email format</span>
+                    </div>
+
+                    <div class="approval-row">
+                        <label class="toggle-checkbox">
+                            <input type="checkbox" id="approve-toggle">
+                            <span class="checkmark"></span>
+                            <span class="toggle-label">I approve these insights and authorize publishing.</span>
+                        </label>
+                    </div>
+
+                    <div class="action-row">
+                        <button id="btn-publish" class="btn publish-btn" disabled>
+                            Publish & Send Email
+                        </button>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- History Section -->
+            <section class="glass-panel history-section">
+                <h2>Run History</h2>
+                <div class="table-container">
+                    <table id="history-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Week</th>
+                                <th>Reviews</th>
+                                <th>Doc Status</th>
+                                <th>Draft Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="/static/app.js"></script>
+</body>
+</html>

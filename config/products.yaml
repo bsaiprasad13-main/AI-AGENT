@@ -1,0 +1,24 @@
+# Product Targets Configuration
+
+products:
+  groww:
+    product_id: "groww"
+    display_name: "Groww (Stocks, Mutual Funds, UPI)"
+    package_name: "com.nextbillion.groww"
+    platform: "play_store"
+    # Canonical Google Doc ID where weekly sections are appended
+    google_doc_id: "1KXVggrUIxi60CnEK9a-zwiN-0TQGxIjit3FoLbwLKto"
+    # Stakeholder email distribution list
+    recipients:
+      - "bsaiprasad13@gmail.com"
+    # Valid product categories to avoid hallucinated themes
+    valid_verticals:
+      - "Stocks & Equity"
+      - "Mutual Funds & SIP"
+      - "Futures & Options (F&O)"
+      - "US Stocks"
+      - "UPI & Bill Payments"
+      - "Direct Mutual Funds"
+      - "Credit & Personal Loans"
+      - "KYC & Bank Verification"
+      - "App Performance & Login"
