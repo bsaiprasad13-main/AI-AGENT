@@ -287,6 +287,11 @@ function validatePublishState() {
     const isApproved = elements.approveToggle.checked;
     
     elements.btnPublish.disabled = !(hasRecipients && isApproved);
+    
+    if (elements.btnPublish.textContent === '✅ Published!') {
+        elements.btnPublish.textContent = 'Publish & Send Email';
+        elements.btnPublish.style.background = '';
+    }
 }
 
 async function publishReport() {

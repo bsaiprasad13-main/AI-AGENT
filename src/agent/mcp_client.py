@@ -203,3 +203,36 @@ class MCPClient:
         }
         logger.info(f"Creating Gmail draft to '{to_str}' with subject '{subject}' via MCP server...")
         return self._make_request("/create_email_draft", method="POST", payload=payload)
+
+    def send_email(
+        self,
+        to: Union[str, List[str]],
+        subject: str,
+        body: str,
+    ) -> Dict[str, Any]:
+        """Sends an email directly via the MCP server.
+
+        Args:
+            to: Recipient email address or list of recipient addresses.
+            subject: Subject line of the email.
+            body: Email body (plain text or HTML).
+
+        Returns:
+            Server response dictionary.
+        """
+        if not to:
+            raise ValueError("Recipient 'to' cannot be empty.")
+        if not subject:
+            raise ValueError("Email 'subject' cannot be empty.")
+        if not body:
+            raise ValueError("Email 'body' cannot be empty.")
+
+        to_str = ", ".join(to) if isinstance(to, list) else str(to)
+
+        payload = {
+            "to": to_str,
+            "subject": subject,
+            "body": body,
+        }
+        logger.info(f"Sending email to '{to_str}' with subject '{subject}' via MCP server...")
+        return self._make_request("/send_email", method="POST", payload=payload)

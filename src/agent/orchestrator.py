@@ -269,11 +269,11 @@ class ReviewPulseOrchestrator:
                                 is_html=bool(email_payload.body_html),
                             )
                         else:
-                            logger.warning("Direct email sending requires local Google OAuth client; falling back to draft.")
-                            draft_response = self.mcp_client.create_email_draft(
+                            logger.info(f"Sending live email to {target_recipients} via MCP server...")
+                            draft_response = self.mcp_client.send_email(
                                 to=target_recipients,
                                 subject=email_payload.subject,
-                                body=email_payload.body_text,
+                                body=email_payload.body_html or email_payload.body_text,
                             )
                         draft_status = "sent"
                     else:
@@ -421,7 +421,7 @@ class ReviewPulseOrchestrator:
                         recipients=target_recipients, subject=subject, body=body, is_html=is_html
                     )
                 else:
-                    draft_response = self.mcp_client.create_email_draft(
+                    draft_response = self.mcp_client.send_email(
                         to=target_recipients, subject=subject, body=body
                     )
                 draft_status = "sent"
