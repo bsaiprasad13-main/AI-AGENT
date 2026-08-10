@@ -28,7 +28,7 @@ class ReviewSanitizationPipeline:
         
         # Initialize Groq for advanced filtering
         self.groq_client = None
-        self.model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        self.model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
         api_key = os.getenv("GROQ_API_KEY")
         if api_key:
             try:

@@ -25,7 +25,7 @@ class ReviewClusterer:
         settings = load_settings()
         self.config = config or settings.reasoning
         self.client = None
-        self.model_name = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        self.model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
         self._init_groq()
 
     def _init_groq(self):

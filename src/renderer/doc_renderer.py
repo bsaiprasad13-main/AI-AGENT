@@ -19,7 +19,7 @@ class DocRenderer:
         settings = load_settings()
         self.config = config or settings.rendering
         self._gemini_client = None
-        self._model_name = "gemini-2.5-flash"
+        self._model_name = "gemini-2.0-flash"
         self._init_llm()
 
     def _init_llm(self):
@@ -27,7 +27,7 @@ class DocRenderer:
         if api_key and api_key != "your_gemini_api_key_here":
             try:
                 self._gemini_client = genai.Client(api_key=api_key)
-                self._model_name = os.getenv("LLM_MODEL", "gemini-2.5-flash")
+                self._model_name = os.getenv("LLM_MODEL", "gemini-2.0-flash")
             except Exception as e:
                 logger.warning(f"Failed to init Gemini model in DocRenderer: {e}")
 
