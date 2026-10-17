@@ -83,6 +83,6 @@ def test_render_email_payload(sample_pulse_report):
 
     # Plain text checks
     assert "WEEKLY CUSTOMER INTELLIGENCE PULSE: GROWW" in email.body_text
-    assert "Total Reviews Analyzed: 650" in email.body_text
+    assert "used for themes: 650" in email.body_text
     assert "App Hang on Fast Order Execution" in email.body_text
     assert email.deep_link_url in email.body_text

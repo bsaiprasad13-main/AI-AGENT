@@ -2,17 +2,18 @@
 
 **Weekly Product Review Pulse** is an automated intelligence agent designed to ingest, analyze, synthesize, and deliver customer feedback from public mobile application store reviews. Currently, it is focused on tracking **Groww** via the **Google Play Store**.
 
-Instead of manual spreadsheet analysis or ad-hoc API integrations, this agent leverages modern ML clustering and LLM synthesis to provide product, support, and leadership teams with a reliable, automated, and repeatable weekly pulse of public customer sentiment. It publishes its findings directly to **Google Docs** and **Gmail** via a dedicated **Model Context Protocol (MCP)** Server.
+Instead of manual spreadsheet analysis or ad-hoc API integrations, this agent leverages modern ML clustering and LLM synthesis to provide product, support, and leadership teams with a reliable, automated, and repeatable weekly pulse of public customer sentiment. It publishes its findings to **Google Docs** and **Gmail**, either directly with Google OAuth or through a separate tool server that exposes `append_to_doc`, `create_email_draft` and `send_email` as MCP-style tools over REST.
 
 ## Key Features
 
 - **Automated Data Ingestion**: Scrapes Google Play Store reviews for Groww (`com.nextbillion.groww`) on a configurable rolling window (8–12 weeks).
 - **Intelligent Preprocessing & Safety**: Performs comprehensive PII scrubbing (phone numbers, emails, UPI, etc.) and guards against prompt injections.
-- **Advanced Clustering & Reasoning**: 
-  - Uses sentence embeddings (`sentence-transformers/all-MiniLM-L6-v2`) mapped into a 5D UMAP manifold.
-  - Clusters semantic density using HDBSCAN to find the most impactful themes while isolating noise.
+- **Theme discovery (embeddings + UMAP + HDBSCAN)**:
+  - Embeds each review locally with `all-MiniLM-L6-v2` (384-d), reduces to 5-D with UMAP, clusters with HDBSCAN (`leaf` selection), and keeps one-off complaints as noise instead of forcing them into a theme.
+  - Settings chosen with `scripts/tune_clustering.py`; quality, stability and theme accuracy measured in [docs/eval_clustering.md](docs/eval_clustering.md).
+  - Themes ranked by impact = reviews x (5 - avg rating) x (1 + log10(1 + thumbs-up)).
 - **LLM Synthesis & Quote Grounding**: Generates actionable insights using Gemini/Groq LLMs while rigorously ensuring extracted verbatim quotes exist in the raw source data (anti-hallucination).
-- **Google Workspace MCP Integration**: Uses an independent MCP server (`https://web-production-c16ea.up.railway.app`) to format and append sections to a living Google Doc and draft or send teaser emails in Gmail.
+- **Google Workspace delivery**: Appends a weekly section to a living Google Doc and drafts or sends a teaser email, via direct Google OAuth or the separate tool server ([MCP-server repo](https://github.com/bsaiprasad13-main/MCP-server)). The server is REST, modelled on MCP tools; moving it to the official MCP protocol is on the roadmap.
 - **Idempotency & Safety**: Safe to re-run; it will not duplicate Google Doc sections or spam emails for the same ISO week.
 
 ## Architecture
@@ -28,8 +29,8 @@ For detailed diagrams and architectural deep-dives, see:
 - **Core & API**: Python 3.10+, FastAPI, Uvicorn, Click, Rich
 - **Data Gathering**: google-play-scraper
 - **Machine Learning & NLP**: sentence-transformers, UMAP, HDBSCAN, scikit-learn
-- **LLM Integration**: Google GenAI, Groq
-- **Integrations**: Model Context Protocol (MCP) SDK, Google Workspace APIs (Docs & Gmail)
+- **LLM Integration**: Gemini 3.5 Flash (theme summaries), Groq gpt-oss-20b (spam filter), gpt-oss-120b (evaluation judge)
+- **Integrations**: Google Workspace APIs (Docs & Gmail), REST tool server (MCP-style)
 
 ## Setup and Installation
 
@@ -70,7 +71,13 @@ python -m src.agent.cli --product groww --week 2026-W32
 
 The project can be deployed to modern PaaS providers like Railway. See the [Deployment Guide](deployment.md) for step-by-step instructions.
 
+## Design decisions and evaluation
+
+See [docs/DECISIONS.md](docs/DECISIONS.md) and [docs/eval_clustering.md](docs/eval_clustering.md).
+
 ## Roadmap & Future Scope
+- Move the tool server to the official MCP protocol.
+- Human-labelled sample to validate theme accuracy (the current check uses an LLM judge).
 - Expand platform ingestion to Apple App Store.
 - Add support for more products (INDMoney, PowerUp Money, Wealth Monitor, Kuvera).
 - Enhanced historical trend tracking and visualization.

@@ -33,38 +33,63 @@ def test_semantic_embedder():
     assert embeddings.shape[1] > 0
 
 
-def test_clustering_grouping_and_impact_ranking():
+GROUPS = {
+    "kyc": ["KYC verification fails because the Aadhaar OTP times out",
+            "Cannot finish KYC onboarding since the OTP never arrives on my phone",
+            "Aadhaar OTP is not coming so my account is still not activated",
+            "Document upload for KYC verification has been stuck for days",
+            "My PAN and Aadhaar verification keeps failing during KYC"],
+    "charts": ["Charts lag terribly during the market open at 9:15",
+               "Candlestick chart freezes and I lose money in options",
+               "Option chain prices update very slowly while trading",
+               "The chart keeps freezing when I place a stop loss order",
+               "Live price ticks are delayed on the trading screen"],
+    "withdraw": ["Withdrawal to my bank account is taking more than two days",
+                 "Money was debited but my balance in the app is not updated",
+                 "I am unable to withdraw my funds to my verified bank account",
+                 "Withdrawal request is pending and support gives no answer about my money",
+                 "Funds withdrawal keeps failing and the money is not credited to my bank"],
+}
+
+
+def _grouped_reviews():
+    reviews, truth = [], {}
+    prefixes = ["", "Honestly, ", "Since last week ", "Again today ", "Very annoying: "]
+    n = 0
+    for group, texts in GROUPS.items():
+        for prefix in prefixes:
+            for text in texts:
+                n += 1
+                rid = f"r{n}"
+                reviews.append(_create_dummy_review(rid, prefix + text, 1 if group != "kyc" else 2, thumbs=n % 7))
+                truth[rid] = group
+    return reviews, truth
+
+
+def test_umap_hdbscan_separates_distinct_issues():
+    reviews, truth = _grouped_reviews()
     clusterer = ReviewClusterer()
-
-    reviews = [
-        # Group 1: KYC / Aadhaar
-        _create_dummy_review("r1", "KYC verification fails with Aadhaar OTP timeout", 1, thumbs=10),
-        _create_dummy_review("r2", "Cannot complete KYC onboarding, OTP never arrives", 1, thumbs=8),
-        _create_dummy_review("r3", "Aadhaar OTP is not coming for account activation", 1, thumbs=5),
-        _create_dummy_review("r4", "Stuck in document upload verification step for 3 days", 2, thumbs=4),
-        # Group 2: F&O Charts
-        _create_dummy_review("r5", "TradingView charts lag terribly during 9:15 AM market open", 1, thumbs=25),
-        _create_dummy_review("r6", "Candlestick chart freeze causes huge loss in options", 1, thumbs=30),
-        _create_dummy_review("r7", "Option chain and live price tick latency is very high", 1, thumbs=15),
-        _create_dummy_review("r8", "Chart is freezing when placing stop loss order", 2, thumbs=12),
-        # Group 3: UPI / Withdrawals
-        _create_dummy_review("r9", "UPI withdrawal to bank is taking more than 24 hours", 1, thumbs=2),
-        _create_dummy_review("r10", "Money debited via UPI but wallet balance not updated", 1, thumbs=3),
-        _create_dummy_review("r11", "Unable to withdraw funds to my verified bank account", 2, thumbs=1),
-        _create_dummy_review("r12", "Bank mandate for SIP failed without reason", 2, thumbs=0),
-    ]
-
     clusters, outliers = clusterer.cluster_reviews(reviews)
-    assert len(clusters) >= 2
-    
-    # Verify impact scores are calculated and sorted descending
-    for i in range(len(clusters) - 1):
-        assert clusters[i].metrics.impact_score >= clusters[i + 1].metrics.impact_score
 
-    # Check top cluster has representative exemplar reviews
-    top_cluster = clusters[0]
-    assert len(top_cluster.representative_texts) > 0
-    assert top_cluster.metrics.review_count > 0
+    assert len(clusters) >= 2
+    # Each theme should be mostly one kind of issue (purity), not a mix.
+    for c in clusters:
+        groups = [truth[rid] for rid in c.review_ids]
+        purity = max(groups.count(g) for g in set(groups)) / len(groups)
+        assert purity >= 0.8, (c.keywords, purity)
+    # Ranked by impact, highest first, with keywords and typical examples.
+    scores = [c.metrics.impact_score for c in clusters]
+    assert scores == sorted(scores, reverse=True)
+    assert all(c.representative_texts and c.keywords for c in clusters)
+    d = clusterer.last_diagnostics
+    assert d.n_reviews == len(reviews) and d.n_clusters == len(clusters)
+
+
+def test_small_input_falls_back_to_one_group():
+    clusterer = ReviewClusterer()
+    few = [_create_dummy_review(f"r{i}", f"Review number {i} about the app experience", 3) for i in range(5)]
+    clusters, outliers = clusterer.cluster_reviews(few)
+    assert len(clusters) == 1 and clusters[0].metrics.review_count == 5 and outliers == []
 
 
 def test_clustering_single_review_fallback():

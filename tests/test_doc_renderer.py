@@ -121,7 +121,7 @@ def test_render_for_doc_append(sample_pulse_report):
     assert "WEEK 2026-W32" in text_content
     assert "Groww (groww)" in text_content
     assert "#h.groww_2026_w32" in text_content
-    assert "Total Reviews Analyzed: 500" in text_content
+    assert "used for themes: 500" in text_content
     assert "Average Star Rating: 3.85 / 5.0" in text_content
     assert "KYC VERIFICATION LATENCY [CRITICAL]" in text_content
     assert "OTP never arrived on my Airtel number during KYC." in text_content
