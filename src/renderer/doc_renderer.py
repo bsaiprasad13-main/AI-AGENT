@@ -23,6 +23,10 @@ class DocRenderer:
         self._init_llm()
 
     def _init_llm(self):
+        # Formatting uses deterministic templates by default: an LLM rewriting the
+        # report could change numbers, and each call spends scarce free-tier quota.
+        if os.getenv("RENDER_WITH_LLM", "false").lower() != "true":
+            return
         api_key = os.getenv("GEMINI_API_KEY")
         if api_key and api_key != "your_gemini_api_key_here":
             try:
@@ -182,9 +186,10 @@ Format it beautifully. Start with `# Week {report.iso_week} ({start_str} – {en
         lines.append("")
         lines.append("| Metric | Value | Context / Delta |")
         lines.append("| :--- | :--- | :--- |")
-        lines.append(f"| **Total Reviews Analyzed** | `{report.total_reviews_analyzed:,}` | Rolling Window |")
-        lines.append(f"| **Average Star Rating** | `{report.average_rating:.2f} / 5.0` | ⭐ {'★' * int(round(report.average_rating))}{'☆' * (5 - int(round(report.average_rating)))} |")
-        lines.append(f"| **Negative Review Share (1–2★)** | `{report.negative_review_percentage:.1f}%` | Critical Attention |")
+        lines.append(f"| **Reviews in Window** | `{report.total_reviews_extracted:,}` | All Play Store reviews scraped |")
+        lines.append(f"| **Reviews Used for Themes** | `{report.total_reviews_analyzed:,}` | English, 8+ words, spam removed |")
+        lines.append(f"| **Average Star Rating** | `{report.average_rating:.2f} / 5.0` | All {report.total_reviews_extracted:,} reviews |")
+        lines.append(f"| **Negative Review Share (1–2★)** | `{report.negative_review_percentage:.1f}%` | All {report.total_reviews_extracted:,} reviews |")
         lines.append(f"| **Identified Core Themes** | `{len(report.themes)}` | Extracted via HDBSCAN + LLM |")
         lines.append(f"| **Unclustered Outliers** | `{report.outlier_count}` | Isolated noise |")
         lines.append("")
@@ -253,7 +258,7 @@ Format it beautifully. Start with `# Week {report.iso_week} ({start_str} – {en
         # Executive KPI Snapshot
         lines.append("EXECUTIVE KPI SNAPSHOT")
         lines.append(sub_divider)
-        lines.append(f"- Total Reviews Analyzed: {report.total_reviews_analyzed:,}")
+        lines.append(f"- Reviews in window: {report.total_reviews_extracted:,} (used for themes: {report.total_reviews_analyzed:,})")
         rating_stars = "★" * int(round(report.average_rating)) + "☆" * (5 - int(round(report.average_rating)))
         lines.append(f"- Average Star Rating: {report.average_rating:.2f} / 5.0 ({rating_stars})")
         lines.append(f"- Negative Review Share (1-2 Stars): {report.negative_review_percentage:.1f}%")

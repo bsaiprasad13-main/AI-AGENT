@@ -38,6 +38,10 @@ class ClusterInfo(BaseModel):
         default_factory=list,
         description="Cleaned text snippets passed into synthesis prompt",
     )
+    keywords: List[str] = Field(
+        default_factory=list,
+        description="Distinctive terms for this cluster (class-based TF-IDF)",
+    )
 
 
 class ClusterTheme(BaseModel):
@@ -60,4 +64,7 @@ class ClusterTheme(BaseModel):
     )
     engineering_action: Optional[str] = Field(
         default=None, description="Infra, latency, crash fix, or backend reliability fix"
+    )
+    llm_generated: bool = Field(
+        default=True, description="False when the LLM was unavailable and the theme was auto-labelled"
     )

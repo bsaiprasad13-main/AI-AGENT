@@ -24,8 +24,21 @@ class SemanticEmbedder:
         self._init_backend()
 
     def _init_backend(self):
-        """Initializes the preferred embedding backend with graceful fallbacks."""
-        # 1. Try Gemini Embedding API if API key is provided
+        """Initializes the preferred embedding backend with graceful fallbacks.
+
+        Local MiniLM comes first: free, fast, the same result on every run, and
+        review text never leaves the machine. A hosted API is only a fallback.
+        """
+        # 1. Local SentenceTransformers model
+        try:
+            from sentence_transformers import SentenceTransformer
+            self._st_model = SentenceTransformer(self.config.model_name)
+            logger.info(f"Initialized SentenceTransformer backend ({self.config.model_name}).")
+            return
+        except Exception as e:
+            logger.warning(f"SentenceTransformer unavailable: {e}")
+
+        # 2. Gemini Embedding API if a key is provided
         api_key = os.getenv("GEMINI_API_KEY")
         if api_key and api_key != "your_gemini_api_key_here":
             try:
@@ -35,15 +48,6 @@ class SemanticEmbedder:
                 return
             except Exception as e:
                 logger.warning(f"Failed to initialize Gemini API: {e}")
-
-        # 2. Try SentenceTransformers if installed
-        try:
-            from sentence_transformers import SentenceTransformer
-            self._st_model = SentenceTransformer(self.config.model_name)
-            logger.info(f"Initialized SentenceTransformer backend ({self.config.model_name}).")
-            return
-        except Exception:
-            pass
 
         # 3. Default fallback: TF-IDF + TruncatedSVD dense projection
         logger.info("Initialized high-speed local TF-IDF + SVD semantic projection backend.")

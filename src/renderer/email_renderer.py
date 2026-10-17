@@ -24,6 +24,10 @@ class EmailRenderer:
         self._init_llm()
 
     def _init_llm(self):
+        # Formatting uses deterministic templates by default: an LLM rewriting the
+        # report could change numbers, and each call spends scarce free-tier quota.
+        if os.getenv("RENDER_WITH_LLM", "false").lower() != "true":
+            return
         api_key = os.getenv("GEMINI_API_KEY")
         if api_key and api_key != "your_gemini_api_key_here":
             try:
@@ -287,7 +291,7 @@ Make it look like a highly polished, styled HTML email teaser. Return only the r
             f"==================================================================",
             "",
             "KEY METRICS SUMMARY:",
-            f"  - Total Reviews Analyzed: {report.total_reviews_analyzed:,}",
+            f"  - Reviews in window:      {report.total_reviews_extracted:,} (used for themes: {report.total_reviews_analyzed:,})",
             f"  - Average Star Rating:    {report.average_rating:.2f} / 5.0",
             f"  - Negative Review Share:  {report.negative_review_percentage:.1f}%",
             f"  - Core Themes Extracted:  {len(report.themes)}",

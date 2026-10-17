@@ -190,10 +190,17 @@ class ReviewPulseOrchestrator:
                     grounded = self.quote_grounder.ground_theme(theme, c_obj, sanitized_reviews)
                     theme_insights.append(grounded)
 
-            # Compute overall metrics
+            # Headline metrics describe ALL reviews in the window. Only ~14% survive
+            # cleaning (English, 8+ words, not spam), and short reviews are mostly
+            # 5-star praise, so averaging the cleaned set alone reported ~3.0 stars
+            # when the real average was ~4.4.
             total_reviews = len(sanitized_reviews)
-            avg_score = round(sum(r.score for r in sanitized_reviews) / total_reviews, 2)
-            neg_count = sum(1 for r in sanitized_reviews if r.is_negative)
+            avg_score = round(sum(r.score for r in raw_reviews) / len(raw_reviews), 2)
+            neg_count_all = sum(1 for r in raw_reviews if r.score <= 2)
+            logger.info(
+                f"Ratings: all {len(raw_reviews)} reviews avg {avg_score}; "
+                f"analysed {total_reviews} avg {round(sum(r.score for r in sanitized_reviews) / total_reviews, 2)}"
+            )
 
             # Construct final report
             report = WeeklyPulseReport(
@@ -205,7 +212,7 @@ class ReviewPulseOrchestrator:
                 total_reviews_extracted=len(raw_reviews),
                 total_reviews_analyzed=total_reviews,
                 average_rating=avg_score,
-                negative_review_percentage=round((neg_count / total_reviews) * 100, 1),
+                negative_review_percentage=round((neg_count_all / len(raw_reviews)) * 100, 1),
                 themes=theme_insights,
                 outlier_count=len(outliers),
             )
